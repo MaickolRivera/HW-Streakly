@@ -33,20 +33,23 @@ public class Habit
 
     public HabitEntry RegisterEntry(DateOnly date, decimal value)
     {
+        if(date > DateOnly.FromDateTime(DateTime.UtcNow))
+            throw new DomainException("La fecha de la entrada no puede ser futura.");
+
         switch (Type)
         {
             case HabitType.Boolean:
                 if (value != 1)
-                    throw new DomainException("El valor del hábito booleano debe ser 0 o 1.");
+                    throw new DomainException("El valor del hábito booleano debe ser 1.");
                 break;
 
             case HabitType.Counter:
-                if (value < 0)
+                if (value <= 0)
                     throw new DomainException("El valor del hábito contador no puede ser negativo.");
                 break;
 
             case HabitType.Scale:
-                if (value < 1 || value > 4)
+                if (value != Math.Floor(value) && value < 1 || value > 4)
                     throw new DomainException("El valor de la escala debe estar entre 1 y 4.");
                 break;
         }
