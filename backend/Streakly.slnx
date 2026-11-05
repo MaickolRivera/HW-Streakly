@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Streakly.Api/Streakly.Api.csproj" />
+    <Project Path="src/Streakly.Application/Streakly.Application.csproj" />
+    <Project Path="src/Streakly.Domain/Streakly.Domain.csproj" />
+    <Project Path="src/Streakly.Infrastructure/Streakly.Infrastructure.csproj" />
+  </Folder>
+</Solution>

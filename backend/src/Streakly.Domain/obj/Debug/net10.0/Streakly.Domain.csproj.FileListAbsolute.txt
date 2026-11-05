@@ -1,0 +1,11 @@
+c:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\bin\Debug\net10.0\Streakly.Domain.deps.json
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\bin\Debug\net10.0\Streakly.Domain.dll
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\bin\Debug\net10.0\Streakly.Domain.pdb
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.AssemblyInfoInputs.cache
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.AssemblyInfo.cs
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.csproj.CoreCompileInputs.cache
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.dll
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\refint\Streakly.Domain.dll
+C:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\Streakly.Domain.pdb
+c:\Users\maico\OneDrive - UCompensar\Desktop\PROJECTS\streakly\backend\src\Streakly.Domain\obj\Debug\net10.0\ref\Streakly.Domain.dll
