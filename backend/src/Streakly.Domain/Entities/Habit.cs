@@ -45,11 +45,11 @@ public class Habit
 
             case HabitType.Counter:
                 if (value <= 0)
-                    throw new DomainException("El valor del hábito contador no puede ser negativo.");
+                    throw new DomainException("El valor del hábito contador debe ser mayor que 0.");
                 break;
 
             case HabitType.Scale:
-                if (value != Math.Floor(value) && value < 1 || value > 4)
+                if (value != Math.Floor(value) || value < 1 || value > 4)
                     throw new DomainException("El valor de la escala debe estar entre 1 y 4.");
                 break;
         }
