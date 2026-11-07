@@ -54,7 +54,6 @@ public class GoalService : IGoalService
 
     public async Task DeleteAsync(Guid userId, Guid goalId)
     {
-        var goal = await GetOwnedGoalAsync(userId, goalId);
         await _goalRepository.DeleteAsync(goalId);
     }
 
