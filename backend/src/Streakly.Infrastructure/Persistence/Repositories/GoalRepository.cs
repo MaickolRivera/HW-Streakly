@@ -15,21 +15,25 @@ public class GoalRepository : IGoalRepository
     {
         return await _context.Goals.Include(g=>g.Tasks).FirstOrDefaultAsync(g=>g.Id == id);
     }
-    public Task<List<Goal>> GetByUserIdAsync(Guid userId)
+    public async Task<List<Goal>> GetByUserIdAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        return await _context.Goals.Include(g=>g.Tasks).Where(g=>g.UserId == userId).ToListAsync();
     }
-    public Task AddAsync(Goal goal)
+    public async Task AddAsync(Goal goal)
     {
-        throw new NotImplementedException();
+        _context.Goals.Add(goal);
+        await _context.SaveChangesAsync();
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var goal = await _context.Goals.FindAsync(id);
+        if (goal == null) return;
+        _context.Goals.Remove(goal);
+        await _context.SaveChangesAsync();
     }
-    public Task UpdateAsync(Goal goal)
+    public async Task UpdateAsync(Goal goal)
     {
-        throw new NotImplementedException();
+        await _context.SaveChangesAsync();
     }
 }

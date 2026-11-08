@@ -12,6 +12,7 @@ public class GoalConfiguration : IEntityTypeConfiguration<Goal>
         builder.Property(g => g.Title).IsRequired().HasMaxLength(200);
 
         builder.HasMany(g => g.Tasks).WithOne().HasForeignKey(t=>t.GoalId).OnDelete(DeleteBehavior.Cascade);
+        builder.Property(g => g.Id).ValueGeneratedNever();
         builder.Navigation(g=> g.Tasks).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
