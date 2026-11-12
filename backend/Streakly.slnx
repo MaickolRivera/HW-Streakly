@@ -5,4 +5,7 @@
     <Project Path="src/Streakly.Domain/Streakly.Domain.csproj" />
     <Project Path="src/Streakly.Infrastructure/Streakly.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Streakly.Tests/Streakly.Tests.csproj" />
+  </Folder>
 </Solution>
