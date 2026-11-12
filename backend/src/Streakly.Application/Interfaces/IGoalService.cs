@@ -8,5 +8,7 @@ public interface IGoalService
     Task<List<GoalResponse>> GetAllAsync(Guid userId);
     Task<GoalResponse> AddTaskAsync(Guid userId, Guid goalId, AddTaskRequest request);
     Task<GoalResponse> CompleteTaskAsync(Guid userId, Guid goalId, Guid taskId);
+    Task<GoalResponse> ToggleTaskAsync(Guid userId, Guid goalId, Guid taskId);
+    Task<GoalResponse> RemoveTaskAsync(Guid userId, Guid goalId, Guid taskId);
     Task DeleteAsync(Guid userId, Guid goalId);
 }

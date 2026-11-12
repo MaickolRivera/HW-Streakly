@@ -25,7 +25,12 @@ public class GoalService : IGoalService
     }
     public async Task<GoalResponse> CreateAsync(Guid userId, CreateGoalRequest request)
     {
-        var goal = new Goal(userId, request.Title);
+        var goal = new Goal(userId, request.Title, request.Description, request.DueDate);
+        foreach (var task in request.Tasks ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(task))
+                goal.AddTask(task);
+        }
         await _goalRepository.AddAsync(goal);
         return goal.ToResponse();
     }
@@ -52,6 +57,22 @@ public class GoalService : IGoalService
         return goal.ToResponse();
     }
 
+    public async Task<GoalResponse> ToggleTaskAsync(Guid userId, Guid goalId, Guid taskId)
+    {
+        var goal = await GetOwnedGoalAsync(userId, goalId);
+        goal.ToggleTask(taskId);
+        await _goalRepository.UpdateAsync(goal);
+        return goal.ToResponse();
+    }
+
+    public async Task<GoalResponse> RemoveTaskAsync(Guid userId, Guid goalId, Guid taskId)
+    {
+        var goal = await GetOwnedGoalAsync(userId, goalId);
+        goal.RemoveTask(taskId);
+        await _goalRepository.UpdateAsync(goal);
+        return goal.ToResponse();
+    }
+
     public async Task DeleteAsync(Guid userId, Guid goalId)
     {
         await GetOwnedGoalAsync(userId, goalId);
@@ -61,6 +82,10 @@ public class GoalService : IGoalService
     public async Task<List<GoalResponse>> GetAllAsync(Guid userId)
     {
         var goals = await _goalRepository.GetByUserIdAsync(userId);
-        return goals.Select(g=> g.ToResponse()).ToList();
+        return goals
+            .OrderBy(g => g.DueDate ?? DateOnly.MaxValue)
+            .ThenBy(g => g.CreatedAt)
+            .Select(g => g.ToResponse())
+            .ToList();
     }
 }
