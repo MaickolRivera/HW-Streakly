@@ -30,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.streakly.app.ui.habit.NewHabitScreen
+import com.streakly.app.ui.streaks.StreaksScreen
 import com.streakly.app.ui.theme.StreaklyColors
 import com.streakly.app.ui.today.TodayScreen
 
@@ -70,7 +71,7 @@ fun StreaklyNavHost(navController: NavHostController = rememberNavController()) 
                 .statusBarsPadding(),
         ) {
             composable(Routes.TODAY) { TodayScreen(onNewHabit = { navController.navigate(Routes.NEW_HABIT) }) }
-            composable(Routes.STREAKS) { Placeholder("Rachas") }
+            composable(Routes.STREAKS) { StreaksScreen() }
             composable(Routes.GOALS) { Placeholder("Goals") }
             composable(Routes.PROFILE) { Placeholder("Perfil") }
             composable(Routes.NEW_HABIT) { NewHabitScreen(onBack = { navController.popBackStack() }) }
