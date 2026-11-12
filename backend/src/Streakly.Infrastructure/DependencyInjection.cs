@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Streakly.Application.Interfaces;
+using Streakly.Infrastructure.Auth;
 using Streakly.Infrastructure.Persistence;
 using Streakly.Infrastructure.Persistence.Repositories;
 
@@ -14,6 +15,10 @@ public static class DependencyInjection
         services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<IHabitRepository, HabitRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
         return services;
     }
 }
