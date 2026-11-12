@@ -1,5 +1,6 @@
 namespace Streakly.Application.Mappings;
 using Streakly.Application.DTOs;
+using Streakly.Domain.Enums;
 using Streakly.Domain.ValueObjects;
 public static class HabitMappings
 {
@@ -8,8 +9,13 @@ public static class HabitMappings
         return new HabitResponse(
             habit.Id,
             habit.Name,
+            habit.Icon,
             habit.Category,
             habit.Type,
+            habit.TargetValue,
+            habit.Unit,
+            habit.ScheduledDays.ToIsoDays(),
+            habit.ReminderTime,
             habit.Thresholds?.ToDto(),
             habit.CreatedAt
         );
@@ -31,5 +37,9 @@ public static class HabitMappings
             thresholds.Maximum,
             thresholds.Unit
         );
+    }
+    public static ScaleThresholds ToValueObject(this ScaleThresholdsDto dto)
+    {
+        return new ScaleThresholds(dto.Minimum, dto.Good, dto.Excellent, dto.Maximum, dto.Unit);
     }
 }
