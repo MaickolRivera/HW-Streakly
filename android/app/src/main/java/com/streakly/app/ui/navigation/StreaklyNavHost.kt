@@ -30,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.streakly.app.ui.theme.StreaklyColors
+import com.streakly.app.ui.today.TodayScreen
 
 object Routes {
     const val TODAY = "today"
@@ -67,7 +68,7 @@ fun StreaklyNavHost(navController: NavHostController = rememberNavController()) 
                 .padding(bottom = padding.calculateBottomPadding())
                 .statusBarsPadding(),
         ) {
-            composable(Routes.TODAY) { Placeholder("Hoy") }
+            composable(Routes.TODAY) { TodayScreen(onNewHabit = { navController.navigate(Routes.NEW_HABIT) }) }
             composable(Routes.STREAKS) { Placeholder("Rachas") }
             composable(Routes.GOALS) { Placeholder("Goals") }
             composable(Routes.PROFILE) { Placeholder("Perfil") }

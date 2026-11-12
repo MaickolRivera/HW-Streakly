@@ -231,7 +231,7 @@ fun LoadingBox(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ErrorBox(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun ErrorBox(message: String, modifier: Modifier = Modifier, onRetry: () -> Unit) {
     Column(
         modifier.fillMaxSize().padding(32.dp),
         verticalArrangement = Arrangement.Center,
