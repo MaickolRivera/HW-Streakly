@@ -6,22 +6,31 @@ public class GoalTask
     public Guid GoalId { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public bool IsCompleted { get; private set; } = false;
+    public int Position { get; private set; }
 
     protected GoalTask() { }
 
-    public GoalTask(Guid goalId, string title)
+    public GoalTask(Guid goalId, string title, int position = 0)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new DomainException("El título no puede estar vacío.");
+        if (title.Trim().Length > 200)
+            throw new DomainException("El título no puede superar 200 caracteres.");
 
         GoalId = goalId;
-        Title = title;
+        Title = title.Trim();
         IsCompleted = false;
+        Position = position;
     }
 
     public void CompleteTask()
     {
         IsCompleted = true;
+    }
+
+    public void Toggle()
+    {
+        IsCompleted = !IsCompleted;
     }
 
     public void UpdateTitle(string title)
@@ -31,6 +40,6 @@ public class GoalTask
             throw new DomainException("El título no puede estar vacío.");
         }
 
-        Title = title;
+        Title = title.Trim();
     }
 }
