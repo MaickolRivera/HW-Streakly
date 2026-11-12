@@ -1,6 +1,59 @@
-@Streakly.Api_HostAddress = http://localhost:5205
+@host = http://localhost:5205
+# Pega aqui el token que devuelve /login (no lo subas al repo con un valor real)
+@token =
 
-GET {{Streakly.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Registro
+POST {{host}}/api/auth/register
+Content-Type: application/json
 
-###
+{ "email": "demo@ejemplo.com", "password": "cambia-esta-clave" }
+
+### Login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "demo@ejemplo.com", "password": "cambia-esta-clave" }
+
+### Crear habito (hecho / no hecho)
+POST {{host}}/api/habits
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Programar", "icon": "code", "type": "Boolean", "targetValue": 30, "unit": "min", "days": [1,2,3,4,5], "reminderTime": "07:00:00" }
+
+### Crear habito contador
+POST {{host}}/api/habits
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Agua", "icon": "drop", "type": "Counter", "targetValue": 2, "unit": "botellones", "days": [1,2,3,4,5,6,7] }
+
+### Hoy
+GET {{host}}/api/today?date=2026-11-11
+Authorization: Bearer {{token}}
+
+### Registrar progreso
+PUT {{host}}/api/habits/{{habitId}}/entries
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "date": "2026-11-11", "value": 1 }
+
+### Estadisticas de un habito (heatmap 18 semanas)
+GET {{host}}/api/habits/{{habitId}}/stats?date=2026-11-11&weeks=18
+Authorization: Bearer {{token}}
+
+### Cumplimiento 30 dias
+GET {{host}}/api/stats/compliance?date=2026-11-11&days=30
+Authorization: Bearer {{token}}
+
+### Crear goal con metas
+POST {{host}}/api/goals
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "title": "Entregar la app Android", "description": "Version final con backend y base de datos.", "dueDate": "2026-12-05", "tasks": ["Diseño de pantallas", "Backend con login", "Hábitos y rachas"] }
+
+### Goals
+GET {{host}}/api/goals
+Authorization: Bearer {{token}}
