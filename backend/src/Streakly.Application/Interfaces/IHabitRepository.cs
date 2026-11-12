@@ -13,6 +13,8 @@ public interface IHabitRepository
     // Entries
     Task<HabitEntry?> GetEntryByDateAsync(Guid habitId, DateOnly date);
     Task<List<HabitEntry>> GetEntriesAsync(Guid habitId, DateOnly from, DateOnly to);
+    Task<List<HabitEntry>> GetEntriesByUserAsync(Guid userId, DateOnly from, DateOnly to);
     Task AddEntryAsync(HabitEntry entry);
     Task UpdateEntryAsync(HabitEntry entry);
+    Task DeleteEntryAsync(HabitEntry entry);
 }

@@ -17,7 +17,7 @@ public class User
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new DomainException("La contraseña no puede estar vacía.");
         
-        Email = email;
+        Email = email.Trim().ToLowerInvariant();
         PasswordHash = passwordHash;
     }
 }
