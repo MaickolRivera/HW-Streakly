@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Solo en debug: permite HTTP para hablar con el backend local (10.0.2.2 / IP de la red). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:usesCleartextTraffic="true"
+        tools:ignore="UnusedAttribute" />
+</manifest>
