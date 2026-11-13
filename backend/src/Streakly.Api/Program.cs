@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Streakly.Api.Middleware;
+using Streakly.Api.OpenApi;
 using Streakly.Application;
 using Streakly.Infrastructure;
 using Streakly.Infrastructure.Auth;
@@ -34,7 +35,11 @@ builder.Services
     .AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<StreaklyDocumentTransformer>();
+    options.AddOperationTransformer<AuthorizeOperationTransformer>();
+});
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -75,7 +80,13 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi(); // /openapi/v1.json
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Streakly API v1");
+        options.DocumentTitle = "Streakly API";
+        options.EnablePersistAuthorization();
+    }); // /swagger
 }
 else
 {
