@@ -19,6 +19,7 @@ También permite crear **goals**: objetivos grandes divididos en metas que vas c
 - **Rachas**: racha actual, mejor racha, % de cumplimiento, heatmap de las últimas 18 semanas y cumplimiento por hábito (30 días).
 - **Goals**: tarjetas con fecha límite, días restantes, progreso y metas que se marcan / desmarcan.
 - **Perfil**: resumen (racha global, mejor racha, hábitos, mínimos cumplidos) y cerrar sesión.
+- **Admin** (solo lectura): los administradores ven desde Perfil → *Usuarios activos* quién usó la app en los últimos 7 días.
 
 ### Reglas de las rachas
 
@@ -68,8 +69,21 @@ cd backend
 dotnet run --project src/Streakly.Api --launch-profile http
 ```
 
-El API queda en `http://localhost:5205` (OpenAPI en `/openapi/v1.json`, salud en `/health`).
+El API queda en `http://localhost:5205`. En Development la documentación Swagger está en
+`/swagger` (OpenAPI en `/openapi/v1.json`) y la salud en `/health`.
 En `src/Streakly.Api/Streakly.Api.http` hay requests de ejemplo.
+
+#### Usuarios administradores
+
+El rol se asigna por correo desde la configuración y se sincroniza en cada login/registro
+(quitar un correo de la lista le quita el rol en su siguiente inicio de sesión):
+
+```bash
+cd backend/src/Streakly.Api
+dotnet user-secrets set "Admin:Emails:0" "tu-correo@ejemplo.com"
+```
+
+> Con variables de entorno: `Admin__Emails__0`. Si el usuario ya tenía sesión abierta, debe cerrarla y volver a entrar.
 
 Tests:
 
@@ -109,8 +123,10 @@ El tráfico HTTP sin cifrar solo está permitido en el build *debug*.
 | GET · POST · DELETE | `/api/goals` · `/api/goals/{id}` | Goals |
 | POST | `/api/goals/{id}/tasks` | Agrega una meta |
 | PATCH | `/api/goals/{id}/tasks/{taskId}/toggle` | Marca / desmarca una meta |
+| GET | `/api/admin/users/active?days=7` | **Solo Admin.** Usuarios con actividad en los últimos `days` días (1–365) |
 
 Todas las rutas excepto registro y login requieren `Authorization: Bearer <token>`.
+Un usuario cuenta como activo cuando inicia sesión o hace cualquier request autenticado (se registra como mucho cada 5 minutos).
 La app envía su fecha local (`date`) para que "hoy" coincida con la zona horaria del usuario.
 
 ## Pendiente / ideas

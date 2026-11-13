@@ -57,3 +57,7 @@ Content-Type: application/json
 ### Goals
 GET {{host}}/api/goals
 Authorization: Bearer {{token}}
+
+### [Admin] Usuarios activos ultimos 7 dias (requiere rol Admin)
+GET {{host}}/api/admin/users/active?days=7
+Authorization: Bearer {{token}}

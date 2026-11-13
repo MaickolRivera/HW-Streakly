@@ -44,8 +44,8 @@ internal sealed class AuthorizeOperationTransformer : IOpenApiOperationTransform
     public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
         var metadata = context.Description.ActionDescriptor.EndpointMetadata;
-        var requiresAuth = metadata.OfType<IAuthorizeData>().Any() && !metadata.OfType<IAllowAnonymous>().Any();
-        if (!requiresAuth)
+        var authorizeData = metadata.OfType<IAuthorizeData>().ToList();
+        if (authorizeData.Count == 0 || metadata.OfType<IAllowAnonymous>().Any())
         {
             return Task.CompletedTask;
         }
@@ -58,6 +58,12 @@ internal sealed class AuthorizeOperationTransformer : IOpenApiOperationTransform
 
         operation.Responses ??= new OpenApiResponses();
         operation.Responses.TryAdd("401", new OpenApiResponse { Description = "No autenticado o token inválido." });
+
+        var roles = authorizeData.Where(a => !string.IsNullOrEmpty(a.Roles)).Select(a => a.Roles).ToList();
+        if (roles.Count > 0)
+        {
+            operation.Responses.TryAdd("403", new OpenApiResponse { Description = $"Requiere rol: {string.Join(", ", roles)}." });
+        }
 
         return Task.CompletedTask;
     }

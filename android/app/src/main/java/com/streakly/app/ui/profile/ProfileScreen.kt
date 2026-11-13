@@ -18,7 +18,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -48,6 +50,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ProfileScreen(
+    onOpenAdmin: () -> Unit,
     viewModel: ProfileViewModel = appViewModel { ProfileViewModel(it.authRepository, it.habitRepository) },
 ) {
     val state = viewModel.state
@@ -89,6 +92,20 @@ fun ProfileScreen(
                             color = StreaklyColors.TextSecondary,
                         )
                     }
+                }
+            }
+        }
+
+        if (state.user?.isAdmin == true) {
+            Spacer(Modifier.height(22.dp))
+            SectionLabel("Administración")
+            Spacer(Modifier.height(10.dp))
+            StreaklyCard(Modifier.fillMaxWidth(), onClick = onOpenAdmin) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.Group, null, tint = StreaklyColors.Green)
+                    Spacer(Modifier.width(12.dp))
+                    Text("Usuarios activos", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = StreaklyColors.TextSecondary)
                 }
             }
         }

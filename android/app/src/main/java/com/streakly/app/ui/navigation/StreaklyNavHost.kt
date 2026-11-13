@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.streakly.app.ui.admin.ActiveUsersScreen
 import com.streakly.app.ui.habit.NewHabitScreen
 import com.streakly.app.ui.profile.ProfileScreen
 import com.streakly.app.ui.streaks.StreaksScreen
@@ -41,6 +42,7 @@ object Routes {
     const val PROFILE = "profile"
     const val NEW_HABIT = "habits/new"
     const val NEW_GOAL = "goals/new"
+    const val ADMIN_USERS = "admin/users"
 }
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
@@ -73,7 +75,8 @@ fun StreaklyNavHost(navController: NavHostController = rememberNavController()) 
             composable(Routes.TODAY) { TodayScreen(onNewHabit = { navController.navigate(Routes.NEW_HABIT) }) }
             composable(Routes.STREAKS) { StreaksScreen() }
             composable(Routes.GOALS) { GoalsScreen(onNewGoal = { navController.navigate(Routes.NEW_GOAL) }) }
-            composable(Routes.PROFILE) { ProfileScreen() }
+            composable(Routes.PROFILE) { ProfileScreen(onOpenAdmin = { navController.navigate(Routes.ADMIN_USERS) }) }
+            composable(Routes.ADMIN_USERS) { ActiveUsersScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.NEW_HABIT) { NewHabitScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.NEW_GOAL) { NewGoalScreen(onBack = { navController.popBackStack() }) }
         }

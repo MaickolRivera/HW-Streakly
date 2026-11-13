@@ -21,6 +21,10 @@ interface StreaklyApi {
     @GET("api/auth/me")
     suspend fun me(): UserDto
 
+    // Admin (solo rol Admin)
+    @GET("api/admin/users/active")
+    suspend fun activeUsers(@Query("days") days: Int): List<ActiveUserDto>
+
     // Habits
     @GET("api/habits")
     suspend fun habits(): List<HabitDto>

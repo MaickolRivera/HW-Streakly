@@ -34,4 +34,27 @@ public class UserRepository : IUserRepository
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(User user)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<User>> GetActiveSinceAsync(DateTime since)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .Where(u => u.LastActiveAt >= since)
+            .OrderByDescending(u => u.LastActiveAt)
+            .ToListAsync();
+    }
+
+    public async Task TouchActivityAsync(Guid userId, DateTime olderThan)
+    {
+        var now = DateTime.UtcNow;
+        await _context.Users
+            .Where(u => u.Id == userId && (u.LastActiveAt == null || u.LastActiveAt < olderThan))
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.LastActiveAt, now));
+    }
 }

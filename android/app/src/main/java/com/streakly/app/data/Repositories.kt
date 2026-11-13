@@ -1,6 +1,7 @@
 package com.streakly.app.data
 
 import com.streakly.app.data.local.TokenStore
+import com.streakly.app.data.remote.ActiveUserDto
 import com.streakly.app.data.remote.AddTaskRequest
 import com.streakly.app.data.remote.AuthRequest
 import com.streakly.app.data.remote.ComplianceDto
@@ -34,6 +35,11 @@ class AuthRepository(private val api: StreaklyApi, private val tokenStore: Token
     suspend fun me(): Result<UserDto> = apiCall { api.me() }
 
     suspend fun logout() = tokenStore.clear()
+}
+
+class AdminRepository(private val api: StreaklyApi) {
+
+    suspend fun activeUsers(days: Int = 7): Result<List<ActiveUserDto>> = apiCall { api.activeUsers(days) }
 }
 
 class HabitRepository(private val api: StreaklyApi) {

@@ -44,6 +44,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddApplication();
+builder.Services.AddSingleton(new AdminSettings(builder.Configuration.GetSection("Admin:Emails").Get<string[]>() ?? []));
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
@@ -60,6 +61,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
             ValidateLifetime = true,
+            RoleClaimType = JwtOptions.RoleClaimType,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
@@ -95,6 +97,7 @@ else
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<UserActivityMiddleware>();
 
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));

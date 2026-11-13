@@ -3,6 +3,7 @@ namespace Streakly.Infrastructure.Auth;
 public class JwtOptions
 {
     public const string SectionName = "Jwt";
+    public const string RoleClaimType = "role";
 
     public string Issuer { get; set; } = "Streakly";
     public string Audience { get; set; } = "Streakly.App";

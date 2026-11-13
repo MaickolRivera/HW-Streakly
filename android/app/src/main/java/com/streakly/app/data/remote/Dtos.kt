@@ -7,7 +7,18 @@ import kotlinx.serialization.Serializable
 data class AuthRequest(val email: String, val password: String)
 
 @Serializable
-data class UserDto(val id: String, val email: String, val createdAt: String)
+data class UserDto(val id: String, val email: String, val createdAt: String, val role: String = UserRole.USER) {
+    val isAdmin: Boolean get() = role == UserRole.ADMIN
+}
+
+object UserRole {
+    const val USER = "User"
+    const val ADMIN = "Admin"
+}
+
+// ---------- Admin ----------
+@Serializable
+data class ActiveUserDto(val id: String, val email: String, val createdAt: String, val lastActiveAt: String)
 
 @Serializable
 data class AuthResponse(val token: String, val expiresAt: String, val user: UserDto)

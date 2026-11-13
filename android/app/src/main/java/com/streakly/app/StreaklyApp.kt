@@ -2,6 +2,7 @@ package com.streakly.app
 
 import android.app.Application
 import android.content.Context
+import com.streakly.app.data.AdminRepository
 import com.streakly.app.data.AuthRepository
 import com.streakly.app.data.GoalRepository
 import com.streakly.app.data.HabitRepository
@@ -16,6 +17,7 @@ class AppContainer(context: Context) {
     val authRepository = AuthRepository(api, tokenStore)
     val habitRepository = HabitRepository(api)
     val goalRepository = GoalRepository(api)
+    val adminRepository = AdminRepository(api)
 }
 
 class StreaklyApp : Application() {
