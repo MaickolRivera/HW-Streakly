@@ -12,6 +12,15 @@ public record CreateHabitRequest(
     CategoryType? Category,
     ScaleThresholdsDto? Thresholds);
 
+/// <summary>Datos editables de un habito. El tipo no se puede cambiar.</summary>
+public record UpdateHabitRequest(
+    string Name,
+    string? Icon,
+    decimal TargetValue,
+    string? Unit,
+    List<int>? Days,
+    TimeOnly? ReminderTime);
+
 public record RegisterEntryRequest(DateOnly Date, decimal Value);
 
 public record HabitResponse(

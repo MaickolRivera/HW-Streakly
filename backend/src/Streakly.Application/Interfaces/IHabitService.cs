@@ -1,10 +1,14 @@
 namespace Streakly.Application.Interfaces;
 using Streakly.Application.DTOs;
+using Streakly.Domain.Enums;
 
 public interface IHabitService
 {
     Task<HabitResponse> CreateAsync(Guid userId, CreateHabitRequest request);
-    Task<List<HabitResponse>> GetAllAsync(Guid userId);
+    /// <param name="search">Texto a buscar en el nombre (opcional).</param>
+    /// <param name="type">Tipo de habito (opcional).</param>
+    Task<List<HabitResponse>> GetAllAsync(Guid userId, string? search = null, HabitType? type = null);
+    Task<HabitResponse> UpdateAsync(Guid userId, Guid habitId, UpdateHabitRequest request);
     Task<HabitResponse> GetByIdAsync(Guid userId, Guid habitId);
     Task DeleteAsync(Guid userId, Guid habitId);
 

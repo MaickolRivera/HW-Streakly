@@ -31,6 +31,24 @@ public class Goal
 
     public int CompletedTasks => _tasks.Count(t => t.IsCompleted);
 
+    public bool IsCompleted => _tasks.Count > 0 && _tasks.All(t => t.IsCompleted);
+
+    public void Update(string title, string? description, DateOnly? dueDate)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("El título no puede estar vacío.");
+        if (title.Trim().Length > 200)
+            throw new DomainException("El título no puede superar 200 caracteres.");
+        if (description?.Length > 1000)
+            throw new DomainException("La descripción no puede superar 1000 caracteres.");
+
+        Title = title.Trim();
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        DueDate = dueDate;
+    }
+
+    public void RenameTask(Guid taskId, string title) => FindTask(taskId).UpdateTitle(title);
+
     public GoalTask AddTask(string title)
     {
         var position = _tasks.Count == 0 ? 0 : _tasks.Max(t => t.Position) + 1;

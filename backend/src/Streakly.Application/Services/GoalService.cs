@@ -79,10 +79,37 @@ public class GoalService : IGoalService
         await _goalRepository.DeleteAsync(goalId);
     }
 
-    public async Task<List<GoalResponse>> GetAllAsync(Guid userId)
+    public async Task<GoalResponse> UpdateAsync(Guid userId, Guid goalId, UpdateGoalRequest request)
+    {
+        var goal = await GetOwnedGoalAsync(userId, goalId);
+        goal.Update(request.Title, request.Description, request.DueDate);
+        await _goalRepository.UpdateAsync(goal);
+        return goal.ToResponse();
+    }
+
+    public async Task<GoalResponse> RenameTaskAsync(Guid userId, Guid goalId, Guid taskId, UpdateTaskRequest request)
+    {
+        var goal = await GetOwnedGoalAsync(userId, goalId);
+        goal.RenameTask(taskId, request.Title);
+        await _goalRepository.UpdateAsync(goal);
+        return goal.ToResponse();
+    }
+
+    public async Task<List<GoalResponse>> GetAllAsync(Guid userId, string? search = null, GoalStatusFilter status = GoalStatusFilter.All)
     {
         var goals = await _goalRepository.GetByUserIdAsync(userId);
+        var term = search?.Trim();
+
         return goals
+            .Where(g => string.IsNullOrEmpty(term)
+                || g.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || (g.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(g => status switch
+            {
+                GoalStatusFilter.Active => !g.IsCompleted,
+                GoalStatusFilter.Completed => g.IsCompleted,
+                _ => true
+            })
             .OrderBy(g => g.DueDate ?? DateOnly.MaxValue)
             .ThenBy(g => g.CreatedAt)
             .Select(g => g.ToResponse())

@@ -59,6 +59,40 @@ public class HabitTests
     }
 
     [Fact]
+    public void Update_changes_editable_fields_and_keeps_type()
+    {
+        var habit = Counter(target: 2);
+        habit.Update("Agua al día", "drop", 3, "vasos", WeekDays.Monday, new TimeOnly(8, 0));
+
+        Assert.Equal("Agua al día", habit.Name);
+        Assert.Equal(3, habit.TargetValue);
+        Assert.Equal(HabitType.Counter, habit.Type);
+        Assert.False(habit.IsCompletedWith(2));
+    }
+
+    [Fact]
+    public void Update_rejects_invalid_values()
+    {
+        var habit = Counter();
+        Assert.Throws<DomainException>(() => habit.Update("", "drop", 2, "x", WeekDays.All, null));
+        Assert.Throws<DomainException>(() => habit.Update("Agua", "drop", 1.5m, "x", WeekDays.All, null));
+        Assert.Throws<DomainException>(() => habit.Update("Agua", "drop", 2, "x", WeekDays.None, null));
+    }
+
+    [Fact]
+    public void Goal_is_completed_when_all_tasks_are_done()
+    {
+        var goal = new Goal(Guid.NewGuid(), "Entregar la app");
+        Assert.False(goal.IsCompleted); // sin metas no se considera completado
+        var a = goal.AddTask("A");
+        var b = goal.AddTask("B");
+        goal.ToggleTask(a.Id);
+        Assert.False(goal.IsCompleted);
+        goal.ToggleTask(b.Id);
+        Assert.True(goal.IsCompleted);
+    }
+
+    [Fact]
     public void Goal_toggle_task_flips_state()
     {
         var goal = new Goal(Guid.NewGuid(), "Entregar la app");

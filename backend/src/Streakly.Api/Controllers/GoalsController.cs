@@ -13,10 +13,13 @@ public class GoalsController : ApiControllerBase
         _goalService = goalService;
     }
 
+    /// <summary>Lista los goals del usuario, con busqueda y filtro opcionales.</summary>
+    /// <param name="search">Texto contenido en el titulo o la descripcion.</param>
+    /// <param name="status">All (todos), Active (en curso) o Completed (todas sus metas cumplidas).</param>
     [HttpGet]
-    public async Task<ActionResult<List<GoalResponse>>> GetAll()
+    public async Task<ActionResult<List<GoalResponse>>> GetAll([FromQuery] string? search, [FromQuery] GoalStatusFilter status = GoalStatusFilter.All)
     {
-        return Ok(await _goalService.GetAllAsync(UserId));
+        return Ok(await _goalService.GetAllAsync(UserId, search, status));
     }
 
     [HttpGet("{id:guid}")]
@@ -30,6 +33,20 @@ public class GoalsController : ApiControllerBase
     {
         var goal = await _goalService.CreateAsync(UserId, request);
         return CreatedAtAction(nameof(GetById), new { id = goal.Id }, goal);
+    }
+
+    /// <summary>Edita titulo, descripcion y fecha limite.</summary>
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<GoalResponse>> Update(Guid id, UpdateGoalRequest request)
+    {
+        return Ok(await _goalService.UpdateAsync(UserId, id, request));
+    }
+
+    /// <summary>Cambia el titulo de una meta.</summary>
+    [HttpPut("{id:guid}/tasks/{taskId:guid}")]
+    public async Task<ActionResult<GoalResponse>> RenameTask(Guid id, Guid taskId, UpdateTaskRequest request)
+    {
+        return Ok(await _goalService.RenameTaskAsync(UserId, id, taskId, request));
     }
 
     [HttpPost("{id:guid}/tasks")]

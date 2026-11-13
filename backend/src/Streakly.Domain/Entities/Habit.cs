@@ -59,6 +59,31 @@ public class Habit
         Thresholds = thresholds;
     }
 
+    /// <summary>
+    /// Edita los datos del habito. El tipo no se puede cambiar porque invalidaria
+    /// el historial de registros (p. ej. un contador con valor 2 no es un "hecho").
+    /// </summary>
+    public void Update(string name, string icon, decimal targetValue, string unit, WeekDays scheduledDays, TimeOnly? reminderTime)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("El nombre del hábito no puede estar vacío.");
+        if (name.Trim().Length > 60)
+            throw new DomainException("El nombre del hábito no puede superar 60 caracteres.");
+        if (targetValue <= 0)
+            throw new DomainException("El mínimo diario debe ser mayor que 0.");
+        if (Type == HabitType.Counter && targetValue != Math.Floor(targetValue))
+            throw new DomainException("El mínimo de un hábito contador debe ser un número entero.");
+        if (scheduledDays == WeekDays.None)
+            throw new DomainException("Selecciona al menos un día para el hábito.");
+
+        Name = name.Trim();
+        Icon = string.IsNullOrWhiteSpace(icon) ? Icon : icon.Trim();
+        TargetValue = targetValue;
+        Unit = unit?.Trim() ?? string.Empty;
+        ScheduledDays = scheduledDays;
+        ReminderTime = reminderTime;
+    }
+
     public bool IsScheduledOn(DateOnly date) => ScheduledDays.HasFlag(date.DayOfWeek.ToWeekDay());
 
     /// <summary>

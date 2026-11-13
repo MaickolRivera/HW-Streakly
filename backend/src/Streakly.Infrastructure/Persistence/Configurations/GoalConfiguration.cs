@@ -15,6 +15,7 @@ public class GoalConfiguration : IEntityTypeConfiguration<Goal>
         builder.HasIndex(g => g.UserId);
         builder.HasOne<User>().WithMany().HasForeignKey(g => g.UserId).OnDelete(DeleteBehavior.Cascade);
         builder.Ignore(g => g.CompletedTasks);
+        builder.Ignore(g => g.IsCompleted);
 
         builder.HasMany(g => g.Tasks).WithOne().HasForeignKey(t => t.GoalId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(g => g.Tasks).UsePropertyAccessMode(PropertyAccessMode.Field);

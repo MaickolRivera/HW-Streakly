@@ -25,10 +25,13 @@ public class HabitRepository : IHabitRepository
             .ToListAsync();
     }
 
-    public async Task<bool> ExistsByNameAsync(Guid userId, string name)
+    public async Task<bool> ExistsByNameAsync(Guid userId, string name, Guid? excludeHabitId = null)
     {
         var normalized = name.Trim().ToLower();
-        return await _context.Habits.AnyAsync(h => h.UserId == userId && h.Name.ToLower() == normalized);
+        return await _context.Habits.AnyAsync(h =>
+            h.UserId == userId &&
+            h.Name.ToLower() == normalized &&
+            (excludeHabitId == null || h.Id != excludeHabitId));
     }
 
     public async Task AddAsync(Habit habit)

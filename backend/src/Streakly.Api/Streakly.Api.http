@@ -61,3 +61,25 @@ Authorization: Bearer {{token}}
 ### [Admin] Usuarios activos ultimos 7 dias (requiere rol Admin)
 GET {{host}}/api/admin/users/active?days=7
 Authorization: Bearer {{token}}
+
+### Buscar y filtrar habitos (dos criterios: texto + tipo)
+GET {{host}}/api/habits?search=agua&type=Counter
+Authorization: Bearer {{token}}
+
+### Editar habito (el tipo no cambia)
+PUT {{host}}/api/habits/{{habitId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Programar", "icon": "code", "targetValue": 45, "unit": "min", "days": [1,2,3,4,5,6], "reminderTime": "06:30:00" }
+
+### Buscar y filtrar goals (dos criterios: texto + estado All/Active/Completed)
+GET {{host}}/api/goals?search=android&status=Active
+Authorization: Bearer {{token}}
+
+### Editar goal
+PUT {{host}}/api/goals/{{goalId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "title": "Entregar la app Android", "description": "Version final lista para sustentar.", "dueDate": "2026-12-10" }

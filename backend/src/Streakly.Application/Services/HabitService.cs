@@ -34,15 +34,7 @@ public class HabitService : IHabitService
         if (await _habitRepository.ExistsByNameAsync(userId, request.Name))
             throw new ConflictException($"Ya tienes un hábito llamado \"{request.Name.Trim()}\".");
 
-        WeekDays days;
-        try
-        {
-            days = request.Days is { Count: > 0 } ? WeekDaysExtensions.FromIsoDays(request.Days) : WeekDays.All;
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            throw new DomainException(ex.Message.Split(" (Parameter")[0]);
-        }
+        var days = ParseDays(request.Days);
 
         var habit = new Habit(
             userId,
@@ -60,10 +52,48 @@ public class HabitService : IHabitService
         return habit.ToResponse();
     }
 
-    public async Task<List<HabitResponse>> GetAllAsync(Guid userId)
+    public async Task<List<HabitResponse>> GetAllAsync(Guid userId, string? search = null, HabitType? type = null)
     {
         var habits = await _habitRepository.GetByUserIdAsync(userId);
-        return habits.Select(h => h.ToResponse()).ToList();
+        var term = search?.Trim();
+
+        return habits
+            .Where(h => string.IsNullOrEmpty(term) || h.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .Where(h => type == null || h.Type == type)
+            .Select(h => h.ToResponse())
+            .ToList();
+    }
+
+    public async Task<HabitResponse> UpdateAsync(Guid userId, Guid habitId, UpdateHabitRequest request)
+    {
+        var habit = await GetOwnedHabitAsync(userId, habitId);
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new DomainException("El nombre del hábito no puede estar vacío.");
+        if (await _habitRepository.ExistsByNameAsync(userId, request.Name, excludeHabitId: habitId))
+            throw new ConflictException($"Ya tienes un hábito llamado \"{request.Name.Trim()}\".");
+
+        habit.Update(
+            request.Name,
+            request.Icon ?? habit.Icon,
+            request.TargetValue,
+            request.Unit ?? string.Empty,
+            request.Days is { Count: > 0 } ? ParseDays(request.Days) : habit.ScheduledDays,
+            request.ReminderTime);
+
+        await _habitRepository.UpdateAsync(habit);
+        return habit.ToResponse();
+    }
+
+    private static WeekDays ParseDays(List<int>? days)
+    {
+        try
+        {
+            return days is { Count: > 0 } ? WeekDaysExtensions.FromIsoDays(days) : WeekDays.All;
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new DomainException(ex.Message.Split(" (Parameter")[0]);
+        }
     }
 
     public async Task<HabitResponse> GetByIdAsync(Guid userId, Guid habitId)

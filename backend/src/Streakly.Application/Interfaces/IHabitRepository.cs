@@ -5,7 +5,7 @@ public interface IHabitRepository
     // Habits
     Task<Habit?> GetByIdAsync(Guid id);
     Task<List<Habit>> GetByUserIdAsync(Guid userId);
-    Task<bool> ExistsByNameAsync(Guid userId, string name);
+    Task<bool> ExistsByNameAsync(Guid userId, string name, Guid? excludeHabitId = null);
     Task AddAsync(Habit habit);
     Task UpdateAsync(Habit habit);
     Task DeleteAsync(Guid id);
