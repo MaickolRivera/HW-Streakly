@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.streakly.app.data.HabitRepository
+import com.streakly.app.data.local.UiPreferences
+import com.streakly.app.data.local.UiPrefs
+import kotlinx.coroutines.flow.Flow
 import com.streakly.app.data.remote.HabitType
 import com.streakly.app.data.remote.TodayDto
 import com.streakly.app.data.remote.TodayHabitDto
@@ -18,7 +21,13 @@ data class TodayUiState(
     val message: String? = null,
 )
 
-class TodayViewModel(private val repository: HabitRepository) : ViewModel() {
+class TodayViewModel(
+    private val repository: HabitRepository,
+    uiPreferences: UiPreferences,
+) : ViewModel() {
+
+    /** Preferencias de interfaz (ocultar cumplidos / ordenar por nombre). */
+    val prefs: Flow<UiPrefs> = uiPreferences.prefs
 
     var state by mutableStateOf(TodayUiState())
         private set

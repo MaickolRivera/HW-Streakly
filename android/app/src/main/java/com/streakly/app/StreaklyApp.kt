@@ -7,11 +7,13 @@ import com.streakly.app.data.AuthRepository
 import com.streakly.app.data.GoalRepository
 import com.streakly.app.data.HabitRepository
 import com.streakly.app.data.local.TokenStore
+import com.streakly.app.data.local.UiPreferences
 import com.streakly.app.data.remote.ApiClient
 
 /** Contenedor de dependencias manual (sin Hilt para mantener el proyecto simple). */
 class AppContainer(context: Context) {
     val tokenStore = TokenStore(context)
+    val uiPreferences = UiPreferences(context)
     private val api = ApiClient.create(tokenStore)
 
     val authRepository = AuthRepository(api, tokenStore)

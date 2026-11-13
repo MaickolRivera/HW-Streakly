@@ -44,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.streakly.app.data.local.UiPrefs
 import com.streakly.app.data.remote.HabitType
 import com.streakly.app.data.remote.TodayHabitDto
 import com.streakly.app.ui.appViewModel
@@ -66,10 +68,13 @@ import java.time.LocalDate
 @Composable
 fun TodayScreen(
     onNewHabit: () -> Unit,
-    viewModel: TodayViewModel = appViewModel { TodayViewModel(it.habitRepository) },
+    onEditHabit: (String) -> Unit,
+    viewModel: TodayViewModel = appViewModel { TodayViewModel(it.habitRepository, it.uiPreferences) },
 ) {
     val state = viewModel.state
+    val prefs by viewModel.prefs.collectAsStateWithLifecycle(initialValue = UiPrefs())
     val snackbar = remember { SnackbarHostState() }
+    var options by remember { mutableStateOf<TodayHabitDto?>(null) }
     var toDelete by remember { mutableStateOf<TodayHabitDto?>(null) }
 
     // Se recarga cada vez que se entra a la pantalla (p. ej. al volver de "Nuevo hábito").
@@ -90,16 +95,25 @@ fun TodayScreen(
                     item { Header(data.globalStreak, onNewHabit) }
                     item { MinimumsCard(data.completed, data.total) }
                     item { SectionLabel("Tus hábitos", Modifier.padding(top = 14.dp, bottom = 2.dp)) }
-                    if (data.habits.isEmpty()) {
-                        item { EmptyState("No hay hábitos para hoy", "Toca + para crear tu primer hábito y empezar tu racha.") }
+                    // Preferencias de interfaz: se aplican solo en la vista, el conteo "3 de 7" no cambia.
+                    val visible = data.habits
+                        .let { list -> if (prefs.sortByName) list.sortedBy { it.name.lowercase() } else list }
+                        .let { list -> if (prefs.hideCompleted) list.filterNot { it.completed } else list }
+                    when {
+                        data.habits.isEmpty() -> item {
+                            EmptyState("No hay hábitos para hoy", "Toca + para crear tu primer hábito y empezar tu racha.")
+                        }
+                        visible.isEmpty() -> item {
+                            EmptyState("¡Cumpliste todos tus mínimos!", "Los hábitos cumplidos están ocultos. Puedes mostrarlos desde Perfil → Preferencias.")
+                        }
                     }
-                    items(data.habits, key = { it.id }) { habit ->
+                    items(visible, key = { it.id }) { habit ->
                         HabitRow(
                             habit = habit,
                             onToggle = { viewModel.toggle(habit) },
                             onIncrement = { viewModel.increment(habit) },
                             onDecrement = { viewModel.decrement(habit) },
-                            onLongPress = { toDelete = habit },
+                            onLongPress = { options = habit },
                         )
                     }
                     item { Spacer(Modifier.height(12.dp)) }
@@ -107,6 +121,25 @@ fun TodayScreen(
             }
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+    }
+
+    options?.let { habit ->
+        AlertDialog(
+            onDismissRequest = { options = null },
+            title = { Text(habit.name) },
+            text = { Text("¿Qué quieres hacer con este hábito?") },
+            confirmButton = {
+                TextButton(onClick = { options = null; onEditHabit(habit.id) }) {
+                    Text("Editar", color = StreaklyColors.Green)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { options = null; toDelete = habit }) {
+                    Text("Eliminar", color = StreaklyColors.Danger)
+                }
+            },
+            containerColor = StreaklyColors.Surface,
+        )
     }
 
     toDelete?.let { habit ->

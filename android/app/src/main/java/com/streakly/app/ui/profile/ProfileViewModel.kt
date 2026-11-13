@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.streakly.app.data.AuthRepository
 import com.streakly.app.data.HabitRepository
+import com.streakly.app.data.local.UiPreferences
+import com.streakly.app.data.local.UiPrefs
+import kotlinx.coroutines.flow.Flow
 import com.streakly.app.data.remote.SummaryDto
 import com.streakly.app.data.remote.UserDto
 import kotlinx.coroutines.async
@@ -22,7 +25,19 @@ data class ProfileUiState(
 class ProfileViewModel(
     private val authRepository: AuthRepository,
     private val habitRepository: HabitRepository,
+    private val uiPreferences: UiPreferences,
 ) : ViewModel() {
+
+    /** Preferencias de interfaz guardadas en el telefono. */
+    val prefs: Flow<UiPrefs> = uiPreferences.prefs
+
+    fun setHideCompleted(value: Boolean) {
+        viewModelScope.launch { uiPreferences.setHideCompleted(value) }
+    }
+
+    fun setSortByName(value: Boolean) {
+        viewModelScope.launch { uiPreferences.setSortByName(value) }
+    }
 
     var state by mutableStateOf(ProfileUiState())
         private set

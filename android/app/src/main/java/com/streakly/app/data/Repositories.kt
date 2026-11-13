@@ -9,6 +9,9 @@ import com.streakly.app.data.remote.CreateGoalRequest
 import com.streakly.app.data.remote.CreateHabitRequest
 import com.streakly.app.data.remote.EntryRequest
 import com.streakly.app.data.remote.GoalDto
+import com.streakly.app.data.remote.GoalStatus
+import com.streakly.app.data.remote.UpdateGoalRequest
+import com.streakly.app.data.remote.UpdateHabitRequest
 import com.streakly.app.data.remote.HabitDto
 import com.streakly.app.data.remote.HabitStatsDto
 import com.streakly.app.data.remote.StreaklyApi
@@ -51,7 +54,11 @@ class HabitRepository(private val api: StreaklyApi) {
 
     suspend fun habits(): Result<List<HabitDto>> = apiCall { api.habits() }
 
+    suspend fun habit(id: String): Result<HabitDto> = apiCall { api.habit(id) }
+
     suspend fun create(request: CreateHabitRequest): Result<HabitDto> = apiCall { api.createHabit(request) }
+
+    suspend fun update(id: String, request: UpdateHabitRequest): Result<HabitDto> = apiCall { api.updateHabit(id, request) }
 
     suspend fun delete(id: String): Result<Unit> = apiCallUnit { api.deleteHabit(id) }
 
@@ -70,9 +77,17 @@ class HabitRepository(private val api: StreaklyApi) {
 
 class GoalRepository(private val api: StreaklyApi) {
 
-    suspend fun goals(): Result<List<GoalDto>> = apiCall { api.goals() }
+    /** Busca por texto (titulo o descripcion) y filtra por estado: dos criterios del lado del servidor. */
+    suspend fun goals(search: String? = null, status: String = GoalStatus.ALL): Result<List<GoalDto>> =
+        apiCall { api.goals(search?.trim()?.ifEmpty { null }, status) }
+
+    suspend fun goal(id: String): Result<GoalDto> = apiCall { api.goal(id) }
 
     suspend fun create(request: CreateGoalRequest): Result<GoalDto> = apiCall { api.createGoal(request) }
+
+    suspend fun update(id: String, request: UpdateGoalRequest): Result<GoalDto> = apiCall { api.updateGoal(id, request) }
+
+    suspend fun removeTask(goalId: String, taskId: String): Result<GoalDto> = apiCall { api.removeTask(goalId, taskId) }
 
     suspend fun addTask(goalId: String, title: String): Result<GoalDto> =
         apiCall { api.addTask(goalId, AddTaskRequest(title)) }

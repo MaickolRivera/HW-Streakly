@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -42,6 +44,11 @@ object Routes {
     const val PROFILE = "profile"
     const val NEW_HABIT = "habits/new"
     const val NEW_GOAL = "goals/new"
+    const val EDIT_HABIT = "habits/edit/{id}"
+    const val EDIT_GOAL = "goals/edit/{id}"
+
+    fun editHabit(id: String) = "habits/edit/$id"
+    fun editGoal(id: String) = "goals/edit/$id"
     const val ADMIN_USERS = "admin/users"
 }
 
@@ -72,13 +79,29 @@ fun StreaklyNavHost(navController: NavHostController = rememberNavController()) 
                 .padding(bottom = padding.calculateBottomPadding())
                 .statusBarsPadding(),
         ) {
-            composable(Routes.TODAY) { TodayScreen(onNewHabit = { navController.navigate(Routes.NEW_HABIT) }) }
+            composable(Routes.TODAY) {
+                TodayScreen(
+                    onNewHabit = { navController.navigate(Routes.NEW_HABIT) },
+                    onEditHabit = { id -> navController.navigate(Routes.editHabit(id)) },
+                )
+            }
             composable(Routes.STREAKS) { StreaksScreen() }
-            composable(Routes.GOALS) { GoalsScreen(onNewGoal = { navController.navigate(Routes.NEW_GOAL) }) }
+            composable(Routes.GOALS) {
+                GoalsScreen(
+                    onNewGoal = { navController.navigate(Routes.NEW_GOAL) },
+                    onEditGoal = { id -> navController.navigate(Routes.editGoal(id)) },
+                )
+            }
             composable(Routes.PROFILE) { ProfileScreen(onOpenAdmin = { navController.navigate(Routes.ADMIN_USERS) }) }
             composable(Routes.ADMIN_USERS) { ActiveUsersScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.NEW_HABIT) { NewHabitScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.NEW_GOAL) { NewGoalScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.EDIT_HABIT, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
+                NewHabitScreen(onBack = { navController.popBackStack() }, habitId = entry.arguments?.getString("id"))
+            }
+            composable(Routes.EDIT_GOAL, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
+                NewGoalScreen(onBack = { navController.popBackStack() }, goalId = entry.arguments?.getString("id"))
+            }
         }
     }
 }

@@ -29,8 +29,14 @@ interface StreaklyApi {
     @GET("api/habits")
     suspend fun habits(): List<HabitDto>
 
+    @GET("api/habits/{id}")
+    suspend fun habit(@Path("id") id: String): HabitDto
+
     @POST("api/habits")
     suspend fun createHabit(@Body body: CreateHabitRequest): HabitDto
+
+    @PUT("api/habits/{id}")
+    suspend fun updateHabit(@Path("id") id: String, @Body body: UpdateHabitRequest): HabitDto
 
     @DELETE("api/habits/{id}")
     suspend fun deleteHabit(@Path("id") id: String): Response<Unit>
@@ -60,10 +66,22 @@ interface StreaklyApi {
 
     // Goals
     @GET("api/goals")
-    suspend fun goals(): List<GoalDto>
+    suspend fun goals(
+        @Query("search") search: String? = null,
+        @Query("status") status: String? = null,
+    ): List<GoalDto>
+
+    @GET("api/goals/{id}")
+    suspend fun goal(@Path("id") id: String): GoalDto
 
     @POST("api/goals")
     suspend fun createGoal(@Body body: CreateGoalRequest): GoalDto
+
+    @PUT("api/goals/{id}")
+    suspend fun updateGoal(@Path("id") id: String, @Body body: UpdateGoalRequest): GoalDto
+
+    @DELETE("api/goals/{id}/tasks/{taskId}")
+    suspend fun removeTask(@Path("id") id: String, @Path("taskId") taskId: String): GoalDto
 
     @POST("api/goals/{id}/tasks")
     suspend fun addTask(@Path("id") id: String, @Body body: AddTaskRequest): GoalDto

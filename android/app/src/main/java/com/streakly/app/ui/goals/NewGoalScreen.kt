@@ -44,6 +44,7 @@ import com.streakly.app.ui.appViewModel
 import com.streakly.app.ui.components.BackHeader
 import com.streakly.app.ui.components.CircleIconButton
 import com.streakly.app.ui.components.FieldLabel
+import com.streakly.app.ui.components.LoadingBox
 import com.streakly.app.ui.components.PrimaryButton
 import com.streakly.app.ui.components.StreaklyTextField
 import com.streakly.app.ui.theme.StreaklyColors
@@ -58,12 +59,18 @@ private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 @Composable
 fun NewGoalScreen(
     onBack: () -> Unit,
-    viewModel: NewGoalViewModel = appViewModel { NewGoalViewModel(it.goalRepository) },
+    goalId: String? = null,
+    viewModel: NewGoalViewModel = appViewModel { NewGoalViewModel(it.goalRepository, goalId) },
 ) {
     val state = viewModel.state
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.saved) { if (state.saved) onBack() }
+
+    if (state.loading) {
+        LoadingBox()
+        return
+    }
 
     Column(Modifier.fillMaxSize().background(StreaklyColors.Background).imePadding().navigationBarsPadding()) {
         Column(
@@ -72,7 +79,7 @@ fun NewGoalScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
         ) {
-            BackHeader("Nuevo goal", onBack)
+            BackHeader(if (state.isEditing) "Editar goal" else "Nuevo goal", onBack)
             Spacer(Modifier.height(16.dp))
 
             FieldLabel("Título")
@@ -121,7 +128,7 @@ fun NewGoalScreen(
                         .padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(task, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                    Text(task.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Icon(
                         Icons.Rounded.Close, "Quitar meta",
                         tint = StreaklyColors.TextSecondary,
@@ -149,7 +156,7 @@ fun NewGoalScreen(
         }
 
         PrimaryButton(
-            "Guardar goal",
+            if (state.isEditing) "Guardar cambios" else "Guardar goal",
             onClick = viewModel::save,
             loading = state.saving,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),

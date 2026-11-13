@@ -46,6 +46,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.streakly.app.data.remote.GoalDto
 import com.streakly.app.data.remote.GoalTaskDto
+import com.streakly.app.data.remote.GoalStatus
+import com.streakly.app.ui.components.StreaklyTextField
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
 import com.streakly.app.ui.appViewModel
 import com.streakly.app.ui.components.CircleIconButton
 import com.streakly.app.ui.components.EmptyState
@@ -62,6 +66,7 @@ import java.time.LocalDate
 @Composable
 fun GoalsScreen(
     onNewGoal: () -> Unit,
+    onEditGoal: (String) -> Unit,
     viewModel: GoalsViewModel = appViewModel { GoalsViewModel(it.goalRepository) },
 ) {
     val state = viewModel.state
@@ -92,8 +97,28 @@ fun GoalsScreen(
                         CircleIconButton(Icons.Rounded.Add, "Nuevo goal", onNewGoal)
                     }
                 }
+                item {
+                    GoalFilters(
+                        search = state.search,
+                        status = state.status,
+                        onSearch = viewModel::onSearch,
+                        onStatus = viewModel::onStatus,
+                    )
+                }
                 if (state.goals.isEmpty()) {
-                    item { EmptyState("Sin goals todavía", "Un goal es un objetivo grande dividido en metas pequeñas. Toca + para crear uno.") }
+                    item {
+                        if (state.hasFilters) {
+                            EmptyState("Sin resultados", "Ningún goal coincide con la búsqueda o el filtro.")
+                            Text(
+                                "Quitar filtros",
+                                color = StreaklyColors.Green,
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(top = 12.dp).clickable { viewModel.clearFilters() }.padding(6.dp),
+                            )
+                        } else {
+                            EmptyState("Sin goals todavía", "Un goal es un objetivo grande dividido en metas pequeñas. Toca + para crear uno.")
+                        }
+                    }
                 }
                 items(state.goals, key = { it.id }) { goal ->
                     GoalCard(
@@ -101,6 +126,7 @@ fun GoalsScreen(
                         expanded = goal.id in state.expanded,
                         onToggleExpanded = { viewModel.toggleExpanded(goal.id) },
                         onToggleTask = { task -> viewModel.toggleTask(goal.id, task.id) },
+                        onEdit = { onEditGoal(goal.id) },
                         onDelete = { toDelete = goal },
                     )
                 }
@@ -129,6 +155,7 @@ private fun GoalCard(
     expanded: Boolean,
     onToggleExpanded: () -> Unit,
     onToggleTask: (GoalTaskDto) -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     StreaklyCard(Modifier.fillMaxWidth()) {
@@ -177,12 +204,21 @@ private fun GoalCard(
                         if (goal.tasks.isEmpty()) {
                             Text("Este goal no tiene metas.", style = MaterialTheme.typography.bodySmall, color = StreaklyColors.TextSecondary, modifier = Modifier.padding(4.dp))
                         }
-                        Text(
-                            "Eliminar goal",
-                            color = StreaklyColors.Danger,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.align(Alignment.End).clickable(onClick = onDelete).padding(6.dp),
-                        )
+                        Row(Modifier.align(Alignment.End)) {
+                            Text(
+                                "Editar",
+                                color = StreaklyColors.Green,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.clickable(onClick = onEdit).padding(6.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Eliminar goal",
+                                color = StreaklyColors.Danger,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.clickable(onClick = onDelete).padding(6.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -220,5 +256,51 @@ private fun TaskRow(task: GoalTaskDto, onClick: () -> Unit) {
             ),
             color = if (task.isCompleted) StreaklyColors.TextSecondary else StreaklyColors.TextPrimary,
         )
+    }
+}
+
+/** Busqueda por texto + filtro por estado (RF-09: dos criterios, resueltos en el servidor). */
+@Composable
+private fun GoalFilters(
+    search: String,
+    status: String,
+    onSearch: (String) -> Unit,
+    onStatus: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        StreaklyTextField(
+            value = search,
+            onValueChange = onSearch,
+            placeholder = "Buscar goal…",
+            trailingIcon = {
+                if (search.isNotEmpty()) {
+                    Icon(
+                        Icons.Rounded.Close, "Borrar búsqueda",
+                        tint = StreaklyColors.TextSecondary,
+                        modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { onSearch("") }.padding(4.dp),
+                    )
+                } else {
+                    Icon(Icons.Rounded.Search, null, tint = StreaklyColors.TextMuted)
+                }
+            },
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(GoalStatus.ALL to "Todos", GoalStatus.ACTIVE to "En curso", GoalStatus.COMPLETED to "Completados")
+                .forEach { (value, label) ->
+                    val selected = value == status
+                    val shape = RoundedCornerShape(20.dp)
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = if (selected) StreaklyColors.OnGreen else StreaklyColors.TextPrimary,
+                        modifier = Modifier
+                            .clip(shape)
+                            .background(if (selected) StreaklyColors.Green else StreaklyColors.Surface)
+                            .border(1.dp, if (selected) StreaklyColors.Green else StreaklyColors.Border, shape)
+                            .clickable { onStatus(value) }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    )
+                }
+        }
     }
 }

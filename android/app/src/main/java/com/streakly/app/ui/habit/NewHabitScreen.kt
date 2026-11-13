@@ -53,6 +53,7 @@ import com.streakly.app.ui.components.BackHeader
 import com.streakly.app.ui.components.CircleIconButton
 import com.streakly.app.ui.components.FieldLabel
 import com.streakly.app.ui.components.HabitIcons
+import com.streakly.app.ui.components.LoadingBox
 import com.streakly.app.ui.components.PrimaryButton
 import com.streakly.app.ui.components.StreaklyCard
 import com.streakly.app.ui.components.StreaklyTextField
@@ -66,12 +67,18 @@ private val dayLabels = listOf(1 to "L", 2 to "M", 3 to "M", 4 to "J", 5 to "V",
 @Composable
 fun NewHabitScreen(
     onBack: () -> Unit,
-    viewModel: NewHabitViewModel = appViewModel { NewHabitViewModel(it.habitRepository) },
+    habitId: String? = null,
+    viewModel: NewHabitViewModel = appViewModel { NewHabitViewModel(it.habitRepository, habitId) },
 ) {
     val state = viewModel.state
     var showTimePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.saved) { if (state.saved) onBack() }
+
+    if (state.loading) {
+        LoadingBox()
+        return
+    }
 
     Column(Modifier.fillMaxSize().background(StreaklyColors.Background).imePadding().navigationBarsPadding()) {
         Column(
@@ -80,7 +87,7 @@ fun NewHabitScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp),
         ) {
-            BackHeader("Nuevo hábito", onBack)
+            BackHeader(if (state.isEditing) "Editar hábito" else "Nuevo hábito", onBack)
             Spacer(Modifier.height(16.dp))
 
             FieldLabel("Nombre")
@@ -111,7 +118,16 @@ fun NewHabitScreen(
                 options = listOf(HabitType.BOOLEAN to "Hecho / no hecho", HabitType.COUNTER to "Contador"),
                 selected = state.type,
                 onSelect = viewModel::onType,
+                enabled = !state.isEditing,
             )
+            if (state.isEditing) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "El tipo no se puede cambiar para no alterar el historial de rachas.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = StreaklyColors.TextMuted,
+                )
+            }
 
             Spacer(Modifier.height(22.dp))
             FieldLabel("Mínimo diario")
@@ -192,7 +208,7 @@ fun NewHabitScreen(
         }
 
         PrimaryButton(
-            "Guardar hábito",
+            if (state.isEditing) "Guardar cambios" else "Guardar hábito",
             onClick = viewModel::save,
             loading = state.saving,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
@@ -229,7 +245,12 @@ fun NewHabitScreen(
 }
 
 @Composable
-fun SegmentedControl(options: List<Pair<String, String>>, selected: String, onSelect: (String) -> Unit) {
+fun SegmentedControl(
+    options: List<Pair<String, String>>,
+    selected: String,
+    onSelect: (String) -> Unit,
+    enabled: Boolean = true,
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -245,7 +266,7 @@ fun SegmentedControl(options: List<Pair<String, String>>, selected: String, onSe
                     .weight(1f)
                     .clip(RoundedCornerShape(11.dp))
                     .background(if (isSelected) StreaklyColors.SurfaceHigh else StreaklyColors.Surface)
-                    .clickable { onSelect(value) }
+                    .clickable(enabled = enabled) { onSelect(value) }
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {

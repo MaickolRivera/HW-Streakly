@@ -22,6 +22,11 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.streakly.app.data.local.UiPrefs
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,9 +56,10 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ProfileScreen(
     onOpenAdmin: () -> Unit,
-    viewModel: ProfileViewModel = appViewModel { ProfileViewModel(it.authRepository, it.habitRepository) },
+    viewModel: ProfileViewModel = appViewModel { ProfileViewModel(it.authRepository, it.habitRepository, it.uiPreferences) },
 ) {
     val state = viewModel.state
+    val prefs by viewModel.prefs.collectAsStateWithLifecycle(initialValue = UiPrefs())
     var confirmLogout by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -125,6 +131,27 @@ fun ProfileScreen(
             }
         }
 
+        Spacer(Modifier.height(22.dp))
+        SectionLabel("Preferencias")
+        Spacer(Modifier.height(10.dp))
+        StreaklyCard(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(vertical = 4.dp)) {
+                PreferenceRow(
+                    title = "Ocultar hábitos cumplidos",
+                    subtitle = "En Hoy solo ves lo que te falta",
+                    checked = prefs.hideCompleted,
+                    onChange = viewModel::setHideCompleted,
+                )
+                HorizontalDivider(color = StreaklyColors.Border, modifier = Modifier.padding(horizontal = 16.dp))
+                PreferenceRow(
+                    title = "Ordenar por nombre",
+                    subtitle = "En Hoy, de la A a la Z",
+                    checked = prefs.sortByName,
+                    onChange = viewModel::setSortByName,
+                )
+            }
+        }
+
         state.error?.let {
             Spacer(Modifier.height(14.dp))
             Text(it, color = StreaklyColors.Danger, style = MaterialTheme.typography.bodySmall)
@@ -159,6 +186,29 @@ fun ProfileScreen(
             confirmButton = { TextButton(onClick = { confirmLogout = false; viewModel.logout() }) { Text("Cerrar sesión", color = StreaklyColors.Danger) } },
             dismissButton = { TextButton(onClick = { confirmLogout = false }) { Text("Cancelar") } },
             containerColor = StreaklyColors.Surface,
+        )
+    }
+}
+
+@Composable
+private fun PreferenceRow(title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = StreaklyColors.TextSecondary)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onChange,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = StreaklyColors.Green,
+                checkedThumbColor = StreaklyColors.OnGreen,
+                uncheckedTrackColor = StreaklyColors.SurfaceHigh,
+                uncheckedBorderColor = StreaklyColors.Border,
+            ),
         )
     }
 }

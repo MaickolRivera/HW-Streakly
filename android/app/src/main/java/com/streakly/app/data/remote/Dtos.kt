@@ -136,6 +136,27 @@ data class CreateGoalRequest(
 @Serializable
 data class AddTaskRequest(val title: String)
 
+@Serializable
+data class UpdateGoalRequest(val title: String, val description: String?, val dueDate: String?)
+
+/** Valores del filtro `status` de GET /api/goals. */
+object GoalStatus {
+    const val ALL = "All"
+    const val ACTIVE = "Active"
+    const val COMPLETED = "Completed"
+}
+
+/** El tipo del habito no se puede cambiar al editar. */
+@Serializable
+data class UpdateHabitRequest(
+    val name: String,
+    val icon: String,
+    val targetValue: Double,
+    val unit: String,
+    val days: List<Int>,
+    val reminderTime: String? = null,
+)
+
 // ---------- Errores (ProblemDetails de ASP.NET) ----------
 @Serializable
 data class ProblemDetails(val title: String? = null, val detail: String? = null, val status: Int? = null)

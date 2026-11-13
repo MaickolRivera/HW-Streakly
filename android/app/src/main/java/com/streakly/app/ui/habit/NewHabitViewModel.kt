@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.streakly.app.data.HabitRepository
 import com.streakly.app.data.remote.CreateHabitRequest
 import com.streakly.app.data.remote.HabitType
+import com.streakly.app.data.remote.UpdateHabitRequest
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -20,15 +21,48 @@ data class NewHabitUiState(
     val days: Set<Int> = setOf(1, 2, 3, 4, 5),
     val reminderEnabled: Boolean = false,
     val reminderTime: LocalTime = LocalTime.of(7, 0),
+    /** true cuando se edita un habito existente (el tipo queda bloqueado). */
+    val isEditing: Boolean = false,
+    val loading: Boolean = false,
     val saving: Boolean = false,
     val error: String? = null,
     val saved: Boolean = false,
 )
 
-class NewHabitViewModel(private val repository: HabitRepository) : ViewModel() {
+/**
+ * Sirve para crear (habitId = null) y para editar (habitId = id del habito).
+ */
+class NewHabitViewModel(
+    private val repository: HabitRepository,
+    private val habitId: String? = null,
+) : ViewModel() {
 
-    var state by mutableStateOf(NewHabitUiState())
+    var state by mutableStateOf(NewHabitUiState(isEditing = habitId != null, loading = habitId != null))
         private set
+
+    init {
+        if (habitId != null) loadHabit(habitId)
+    }
+
+    private fun loadHabit(id: String) {
+        viewModelScope.launch {
+            repository.habit(id)
+                .onSuccess { habit ->
+                    state = state.copy(
+                        loading = false,
+                        name = habit.name,
+                        icon = habit.icon,
+                        type = habit.type,
+                        target = habit.targetValue.toInt().coerceAtLeast(1),
+                        unit = habit.unit,
+                        days = habit.days.toSet(),
+                        reminderEnabled = habit.reminderTime != null,
+                        reminderTime = habit.reminderTime?.let { runCatching { LocalTime.parse(it) }.getOrNull() } ?: LocalTime.of(7, 0),
+                    )
+                }
+                .onFailure { state = state.copy(loading = false, error = it.message) }
+        }
+    }
 
     fun onName(value: String) { state = state.copy(name = value.take(60), error = null) }
     fun onIcon(value: String) { state = state.copy(icon = value) }
@@ -37,6 +71,7 @@ class NewHabitViewModel(private val repository: HabitRepository) : ViewModel() {
     fun onReminderTime(value: LocalTime) { state = state.copy(reminderTime = value) }
 
     fun onType(value: String) {
+        if (state.isEditing) return
         // Sugerencias de unidad al cambiar de tipo, sin pisar lo que el usuario ya escribio.
         val unit = when {
             value == HabitType.COUNTER && state.unit == "min" -> "veces"
@@ -64,17 +99,35 @@ class NewHabitViewModel(private val repository: HabitRepository) : ViewModel() {
             state.days.isEmpty() -> { state = state.copy(error = "Elige al menos un día."); return }
         }
         state = state.copy(saving = true, error = null)
+        val reminder = if (state.reminderEnabled) "%02d:%02d:00".format(state.reminderTime.hour, state.reminderTime.minute) else null
+
         viewModelScope.launch {
-            val request = CreateHabitRequest(
-                name = state.name.trim(),
-                icon = state.icon,
-                type = state.type,
-                targetValue = state.target.toDouble(),
-                unit = state.unit.trim(),
-                days = state.days.sorted(),
-                reminderTime = if (state.reminderEnabled) "%02d:%02d:00".format(state.reminderTime.hour, state.reminderTime.minute) else null,
-            )
-            repository.create(request)
+            val result = if (habitId == null) {
+                repository.create(
+                    CreateHabitRequest(
+                        name = state.name.trim(),
+                        icon = state.icon,
+                        type = state.type,
+                        targetValue = state.target.toDouble(),
+                        unit = state.unit.trim(),
+                        days = state.days.sorted(),
+                        reminderTime = reminder,
+                    ),
+                )
+            } else {
+                repository.update(
+                    habitId,
+                    UpdateHabitRequest(
+                        name = state.name.trim(),
+                        icon = state.icon,
+                        targetValue = state.target.toDouble(),
+                        unit = state.unit.trim(),
+                        days = state.days.sorted(),
+                        reminderTime = reminder,
+                    ),
+                )
+            }
+            result
                 .onSuccess { state = state.copy(saving = false, saved = true) }
                 .onFailure { state = state.copy(saving = false, error = it.message) }
         }

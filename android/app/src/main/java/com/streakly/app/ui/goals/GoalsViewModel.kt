@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.streakly.app.data.GoalRepository
 import com.streakly.app.data.remote.GoalDto
+import com.streakly.app.data.remote.GoalStatus
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class GoalsUiState(
@@ -15,24 +18,56 @@ data class GoalsUiState(
     val goals: List<GoalDto> = emptyList(),
     val expanded: Set<String> = emptySet(),
     val message: String? = null,
-)
+    /** Criterio 1: texto en titulo o descripcion. */
+    val search: String = "",
+    /** Criterio 2: All / Active / Completed. */
+    val status: String = GoalStatus.ALL,
+) {
+    val hasFilters: Boolean get() = search.isNotBlank() || status != GoalStatus.ALL
+}
 
 class GoalsViewModel(private val repository: GoalRepository) : ViewModel() {
 
     var state by mutableStateOf(GoalsUiState())
         private set
 
+    private var searchJob: Job? = null
+    private var firstLoad = true
+
     fun load() {
-        if (state.goals.isEmpty()) state = state.copy(loading = true, error = null)
+        if (state.goals.isEmpty() && !state.hasFilters) state = state.copy(loading = true, error = null)
         viewModelScope.launch {
-            repository.goals()
+            repository.goals(state.search, state.status)
                 .onSuccess { goals ->
-                    // El primer goal arranca expandido, como en el diseño.
-                    val expanded = if (state.expanded.isEmpty() && goals.isNotEmpty()) setOf(goals.first().id) else state.expanded
+                    // La primera vez, el primer goal arranca expandido como en el diseño.
+                    val expanded = if (firstLoad && goals.isNotEmpty()) setOf(goals.first().id) else state.expanded
+                    firstLoad = false
                     state = state.copy(loading = false, error = null, goals = goals, expanded = expanded)
                 }
                 .onFailure { state = state.copy(loading = false, error = it.message) }
         }
+    }
+
+    fun onSearch(value: String) {
+        state = state.copy(search = value.take(100))
+        // Espera a que el usuario deje de escribir para no hacer una peticion por letra.
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(350)
+            load()
+        }
+    }
+
+    fun onStatus(value: String) {
+        if (value == state.status) return
+        state = state.copy(status = value)
+        load()
+    }
+
+    fun clearFilters() {
+        searchJob?.cancel()
+        state = state.copy(search = "", status = GoalStatus.ALL)
+        load()
     }
 
     fun toggleExpanded(goalId: String) {
@@ -51,7 +86,11 @@ class GoalsViewModel(private val repository: GoalRepository) : ViewModel() {
         })
         viewModelScope.launch {
             repository.toggleTask(goalId, taskId)
-                .onSuccess { updated -> state = state.copy(goals = state.goals.map { if (it.id == updated.id) updated else it }) }
+                .onSuccess { updated ->
+                    state = state.copy(goals = state.goals.map { if (it.id == updated.id) updated else it })
+                    // Con filtro por estado, un goal puede dejar de cumplirlo al marcar su ultima meta.
+                    if (state.status != GoalStatus.ALL) load()
+                }
                 .onFailure { state = state.copy(message = it.message); load() }
         }
     }
